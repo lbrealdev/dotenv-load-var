@@ -19,6 +19,7 @@ fn main() -> std::io::Result<()> {
 
     if !custom_dotenv.exists() {
         println!("Creating custom '{}' file", custom_dotenv.strip_prefix(&cwd).unwrap().display());
+        
         let mut dotenv_file = File::create(&custom_dotenv)?;
         writeln!(dotenv_file, "SECOND_VARIABLE=\"Second Variable\"")?;
     }
