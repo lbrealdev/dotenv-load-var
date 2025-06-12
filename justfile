@@ -25,4 +25,4 @@ set dotenv-load := true
     cargo fmt
 
 @delete:
-    rm -f .env custom/.env
+    rm -rf .env custom

@@ -14,9 +14,9 @@ jobs:
       #     echo 'FIRST_VARIABLE="First Value"' > .env
       #     echo 'SECOND_VARIABLE="Second Value"' > custom/.env
 
-      - name: Debug
-        run: |
-          ls -lthr
-          ls -la
+      # - name: Debug
+      #   run: |
+      #     ls -lthr
+      #     ls -la
 
-      # - run: cargo run
+      - run: cargo run

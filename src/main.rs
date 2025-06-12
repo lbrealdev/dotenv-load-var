@@ -2,7 +2,7 @@
 
 use dotenv::dotenv;
 use std::env;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::Write;
 
 fn main() -> std::io::Result<()> {
@@ -19,7 +19,11 @@ fn main() -> std::io::Result<()> {
 
     if !custom_dotenv.exists() {
         println!("Creating custom '{}' file", custom_dotenv.strip_prefix(&cwd).unwrap().display());
-        
+
+        if let Some(parent) = custom_dotenv.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
         let mut dotenv_file = File::create(&custom_dotenv)?;
         writeln!(dotenv_file, "SECOND_VARIABLE=\"Second Variable\"")?;
     }
