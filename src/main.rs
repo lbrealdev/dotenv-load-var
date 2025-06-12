@@ -5,7 +5,6 @@ use std::env;
 
 fn main() {
     let cwd = env::current_dir().unwrap();
-    // let custom_dotenv_file = cwd.parent().unwrap().join(".env");
     let custom_dotenv_file = cwd.join("custom/.env");
 
     println!("The current directory is: {}", cwd.display());
@@ -26,19 +25,19 @@ fn main() {
         custom_dotenv_file.display()
     );
 
-    // loads .env file
+    // Loads .env file
     dotenv().ok();
 
-    // loads .env file in specific path
+    // Loads .env file in specific path
     // Pass a reference to avoid moving the PathBuf
     let _ = dotenv::from_path(&custom_dotenv_file);
 
-    // panic if FIRST_VARIABLE doesn't exist
+    // Panic if FIRST_VARIABLE doesn't exist
     if env::var("FIRST_VARIABLE").is_err() {
         panic!("FIRST_VARIABLE was not found!")
     }
 
-    // panic if SECOND_VARIABLE doesn't exist
+    // Panic if SECOND_VARIABLE doesn't exist
     if env::var("SECOND_VARIABLE").is_err() {
         panic!("SECOND_VARIABLE was not found!")
     }
