@@ -8,10 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create .env files
-        run: |
-          mkdir custom
-          echo 'FIRST_VARIABLE="First Value"' > .env
-          echo 'SECOND_VARIABLE="Second Value"' > custom/.env
-          
       - run: cargo run

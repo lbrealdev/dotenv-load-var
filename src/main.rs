@@ -2,35 +2,47 @@
 
 use dotenv::dotenv;
 use std::env;
+use std::fs::{self, File};
+use std::io::Write;
 
-fn main() {
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{ContentArrangement, Table};
+
+fn main() -> std::io::Result<()> {
     let cwd = env::current_dir().unwrap();
-    let custom_dotenv_file = cwd.join("custom/.env");
 
-    println!("The current directory is: {}", cwd.display());
-    println!(
-        "The directory name is: {}",
-        cwd.file_stem().unwrap().display()
-    );
-    println!(
-        "The parent directory is: {}",
-        cwd.parent().unwrap().display()
-    );
-    println!(
-        "Default dotenv file path is: {}",
-        cwd.join(".env").display()
-    );
-    println!(
-        "Custom dotenv file path is: {}",
-        custom_dotenv_file.display()
-    );
+    let default_dotenv = cwd.join(".env");
+    let custom_dotenv = cwd.join("custom/.env");
 
-    // Loads .env file
+    if !default_dotenv.exists() {
+        println!(
+            "Creating default '{}' file",
+            default_dotenv.file_stem().unwrap().display()
+        );
+        let mut dotenv_file = File::create(default_dotenv)?;
+        writeln!(dotenv_file, "FIRST_VARIABLE=\"First Variable\"")?;
+    }
+
+    if !custom_dotenv.exists() {
+        println!(
+            "Creating custom '{}' file",
+            custom_dotenv.strip_prefix(&cwd).unwrap().display()
+        );
+
+        if let Some(parent) = custom_dotenv.parent() {
+            fs::create_dir_all(parent)?;
+        }
+
+        let mut dotenv_file = File::create(&custom_dotenv)?;
+        writeln!(dotenv_file, "SECOND_VARIABLE=\"Second Variable\"")?;
+    }
+
+    // Loads .env on working directory
     dotenv().ok();
 
     // Loads .env file in specific path
     // Pass a reference to avoid moving the PathBuf
-    let _ = dotenv::from_path(&custom_dotenv_file);
+    let _ = dotenv::from_path(&custom_dotenv);
 
     // Panic if FIRST_VARIABLE doesn't exist
     if env::var("FIRST_VARIABLE").is_err() {
@@ -42,17 +54,37 @@ fn main() {
         panic!("SECOND_VARIABLE was not found!")
     }
 
+    // Unwrap here because it's already handled with panic above.
     let first_variable = env::var("FIRST_VARIABLE").unwrap();
     let second_variable = env::var("SECOND_VARIABLE").unwrap();
 
-    println!(
-        "File: {} Variable: {}",
-        cwd.join(".env").display(),
-        first_variable
-    );
-    println!(
-        "File: {} Variable: {}",
-        custom_dotenv_file.display(),
-        second_variable
-    );
+    let first_key = find_key_by_value(first_variable.as_str()).unwrap_or("UNKNOWN".into());
+    let second_key = find_key_by_value(second_variable.as_str()).unwrap_or("UNKNOWN".into());
+
+    let mut table = Table::new();
+
+    table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .set_header(vec!["DOTENV FILE", "KEY", "VALUE"])
+        .add_row(vec![
+            format!("{}", cwd.join(".env").display()),
+            format!("{}", first_key),
+            format!("{}", first_variable),
+        ])
+        .add_row(vec![
+            format!("{}", custom_dotenv.display()),
+            format!("{}", second_key),
+            format!("{}", second_variable),
+        ]);
+
+    println!("{table}");
+
+    Ok(())
+}
+
+fn find_key_by_value(var: &str) -> Option<String> {
+    env::vars()
+        .find(|(_, value)| value == var)
+        .map(|(key, _)| key)
 }
