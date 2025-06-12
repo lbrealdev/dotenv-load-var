@@ -58,6 +58,9 @@ fn main() -> std::io::Result<()> {
     let first_variable = env::var("FIRST_VARIABLE").unwrap();
     let second_variable = env::var("SECOND_VARIABLE").unwrap();
 
+    let first_key = find_key_by_value(first_variable.as_str()).unwrap_or("UNKNOWN".into());
+    let second_key = find_key_by_value(second_variable.as_str()).unwrap_or("UNKNOWN".into());
+
     let mut table = Table::new();
 
     table
@@ -66,16 +69,22 @@ fn main() -> std::io::Result<()> {
         .set_header(vec!["DOTENV FILE", "KEY", "VALUE"])
         .add_row(vec![
             format!("{}", cwd.join(".env").display()),
-            format!("{}", "FIRST_VARIABLE"),
+            format!("{}", first_key),
             format!("{}", first_variable),
         ])
         .add_row(vec![
             format!("{}", custom_dotenv.display()),
-            format!("{}", "SECOND VARIABLE"),
+            format!("{}", second_key),
             format!("{}", second_variable),
         ]);
 
     println!("{table}");
 
     Ok(())
+}
+
+fn find_key_by_value(var: &str) -> Option<String> {
+    env::vars()
+        .find(|(_, value)| value == var)
+        .map(|(key, _)| key)
 }
